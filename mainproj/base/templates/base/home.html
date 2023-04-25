@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Main Page</title>
+
+    <style>
+        .home-container {
+            display :grid;
+            grid-template-columns: 1fr 3fr 1fr;
+        }
+    </style>
+</head>
+<body>
+    {% extends 'main.html' %}
+    {% block content %}
+
+    
+
+    <div class="home-container">
+        <div>
+            <a href="{% url 'create-topic' %}"> <h3>Create a Topic</h3></a>
+            {%  include 'base/topics_component.html' %}
+        </div>    
+    
+        <div>
+            <h5>{{room_count}} rooms available</h5>
+            <a href="{% url 'create-room' %}"> <h3>Create a Room</h3></a>
+        <!-- <a href="/room"> Go to Room</a> -->
+            {%  include 'base/feed_component.html' %}
+        </div>
+
+        <div>
+            {% include 'base/activity_component.html' %}
+        </div>
+
+        {% endblock content %}
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Main Page</title>
+</head>
+<body>
+    {% extends 'main.html' %}
+    {% block content %}
+
+    <h1>Search Results are: </h1>
+
+    <div>
+        <div>
+            {% comment %} <!-- <h4>These are the available rooms</h4> --> {% endcomment %}
+
+            {% for rom in rooms %}
+            <span>@{{rom.host.username}}</span>
+            <h5>{{rom.id}} -- <a href="/room/{{rom.id}}">{{rom.name}}</a></h5>
+
+            <a href="{% url 'update-room' rom.id %}">Edit this Room</a>
+            <a href="{% url 'delete-room' rom.id %}">Delete this Room</a>
+            <small>{{room.topic}}</small>
+            <br>
+            {% comment %} <!-- <big>Date: {{room.created}}</big> --> {% endcomment %}
+            <hr>
+
+            {% endfor %}
+        </div>
+    </div>
+    {% endblock content %}
+</body>
+</html>

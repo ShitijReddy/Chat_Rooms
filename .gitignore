@@ -1,0 +1,7 @@
+myenv/
+tutorial/
+web/
+mainproj/db.sqlite3
+mainproj/media/
+mainproj/base/__pycache__/
+mainproj/mainproj/__pycache__/

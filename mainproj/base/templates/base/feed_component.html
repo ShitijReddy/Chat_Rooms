@@ -1,0 +1,60 @@
+<style>
+    .room-container {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+    }
+    /* .image-container {
+        width: 60%;
+    } */
+</style>
+<div>
+    <!-- <form action="/search" method="get"> -->
+        <!-- {% csrf_token %} -->
+        <!-- <h3>Search by Room Name: </h3> -->
+        <!-- <input type="text" name="query" id="query"/> -->
+        <!-- <input type="submit" value="Search"> -->
+        <!-- <hr> -->
+    <!-- </form> -->
+    
+
+    <!-- <form action="/search-user" method="get"> -->
+        <!-- {% csrf_token %} -->
+        <!-- <h3>Search by Room Host Name: </h3> -->
+        <!-- <input type="text" name="query" id="query"/> -->
+        <!-- <input type="submit" value="Search"> -->
+        <!-- <hr> -->
+    <!-- </form> -->
+    <!-- <h4>These are the available rooms</h4> -->
+
+    {% for rom in rooms %}
+    <div class="room-container">
+        <div>
+            <a href="{% url 'user-profile' rom.host.id %}">@{{rom.host.username}}</a>
+            <h5>{{rom.id}} -- <a href="/room/{{rom.id}}">{{rom.name}}</a></h5>
+            <!-- <p>Image: {{ rom.img }}</p> -->
+            
+            <a href="{% url 'update-room' rom.id %}">Edit this Room</a>
+            <a href="{% url 'delete-room' rom.id %}">Delete this Room</a>
+            
+            <p>{{room.topic}}</p>
+            <br>
+        </div>
+        <div>
+            <!-- <div class="image-container"> -->
+                {% if rom.img %}
+                    <img src="{{rom.img.url}}" alt="No Image" width="300"/>
+                    <!-- URL: {{ rom.img.url }} -->
+                {% endif %}
+            <!-- </div> -->
+            
+            <!-- <img src="" alt=""> -->
+        </div>
+        <!-- <br> -->
+        <!-- <img src="" alt=""> -->
+        
+        <!-- <big>Date: {{room.created}}</big> -->
+        
+    </div>
+    <hr>
+    {% endfor %}
+</div>

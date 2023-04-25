@@ -1,0 +1,69 @@
+{% extends 'main.html' %}
+
+{% block content %}
+
+<style>
+    .room-container {
+        display: grid;
+        grid-template-columns: 3fr 1fr;
+    }
+</style>
+
+<div class="room-container">
+
+    <div>
+        <h1>{{room.name}}</h1>
+
+        <p>{{room.description}}</p>
+
+        {% if not request.user.is_authenticated %}
+        <h3>You can message only if you login</h3>
+        {% endif %}
+        <div class="comment-wrapper">
+            <h3>Conversation</h3>
+            <hr>
+            <!-- <form action="{% url 'room-search' room.id %}">
+                <input type="text" name="q" id="q">
+                
+            </form> -->
+            {% for message in room_messages %}
+                <div>
+                    
+                    <small>@ {{message.user}} {{message.created|timesince}} ago</small>
+                    <br><br>
+                    <span>{{message.body}}</span>
+                    
+                    <a href="{% url 'upvote-message' message.id %}"> <img src="{{ message.img.url }}" alt="" width="25" height="25"> </a>
+                    <p>Votes: {{ message.votes }}</p>
+                    
+                    {% if request.user == message.user %}
+                    <a href="{% url 'delete-message' message.id %}">Delete</a>
+                    {% endif %}
+                    <hr>
+                </div>
+            {% endfor %}
+        </div>
+
+        {% if request.user.is_authenticated %}
+        <div class="comment-form">
+            <form action="" method="POST">
+                {% csrf_token %}
+                <input type="text" name="body" placeholder="write your msg..." />
+            </form>
+
+        </div>
+        {% endif %}
+        
+    </div>
+
+    <div>
+        <h3>Participants</h3>
+        <hr>
+        {% for participant in participants %}
+            <div>
+                <p>@{{participant.username}}</p>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock content %}

@@ -1,0 +1,47 @@
+{%  extends 'main.html' %}
+
+{%  block content %}
+<style>
+    .profile-container {
+        display :grid;
+        grid-template-columns: 1fr 5fr 1fr;
+    }
+</style>
+
+<!-- <h1>{{user.username}}</h1> -->
+
+<div class="profile-container">
+    <!-- <div> -->
+        <!-- {% include 'base/topics_component.html' %} -->
+    <!-- </div> -->
+    <!-- <h1>working?....</h1> -->
+    <div>
+
+    </div>
+    <div>
+        <h3>These are the Search Results</h3>
+        {% for message in room_messages %}
+        <div>
+            <!-- <h1>working?....</h1> -->
+            <small> <a href="{% url 'user-profile' message.user.id %}">@ {{message.user}}</a> {{message.created|timesince}}</small>
+            <em><p >Room : "{{message.room}}"</p></em>
+
+            <big>{{message}}</big>
+            {% if request.user == message.user %}
+            <a href="{% url 'delete-message' message.id %}">Delete</a>
+            {% endif %}
+            <hr>
+        </div>
+        {% endfor %}
+    </div>
+    <div>
+        <!-- <h5>All the messages will appear here</h5> -->
+        <!-- {%  include 'base/feed_component.html' %} -->
+    </div>
+<!-- 
+    <div>
+        {% include 'base/activity_component.html' %}
+    </div> -->
+</div>
+
+{%  endblock content %}
