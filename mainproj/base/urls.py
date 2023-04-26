@@ -18,6 +18,8 @@ urlpatterns = [
     path('profile/<str:pk>/', views.UserProfile.as_view(), name="user-profile"),
     path('create-room/', login_required(views.CreateRoom.as_view(), login_url='login'), name='create-room'),
     path('create-topic/', login_required(views.CreateTopic.as_view(), login_url='login'), name='create-topic'),
+    path('create-user/', login_required(views.CreateUser.as_view(), login_url='login'), name='create-user'),
+    path('edit-user/', login_required(views.EditUserProfile.as_view(), login_url='login'), name='edit-user'),
     path('update-room/<str:pk>/', login_required(views.UpdateRoom.as_view(), login_url='login'), name='update-room'),
     path('delete-room/<str:pk>/',login_required(views.DeleteRoom.as_view(), login_url='login'), name="delete-room"),
     path('search', views.Search.as_view(), name="search"),

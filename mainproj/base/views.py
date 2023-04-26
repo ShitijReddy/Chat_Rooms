@@ -1,18 +1,18 @@
 from django.shortcuts import render, redirect, HttpResponse
 from django.contrib import messages
 from.models import Room, Topic, Message
-from .forms import RoomForm, TopicForm
+from .forms import RoomForm, TopicForm, UserProfileForm
 from django.db.models import Q
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
 
-from django.http import HttpResponseRedirect
+
 from django.utils.decorators import method_decorator
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from .mixins import GroupRequiredMixin
-
+from .query_debugger import query_debugger
 
 from django.views import View
 
@@ -74,19 +74,40 @@ class RegisterPage(View):
 
 
 class Home(View):
+    # @query_debugger
+    @method_decorator(query_debugger, name='dispatch')
     def get(self, request):
         print(request.user)
         q = request.GET.get('act') if request.GET.get('act') != None else '5'
         que = request.GET.get('top') if request.GET.get('top') != None else ''
         
         room_messages = Message.objects.all()
-        # rooms = Room.objects.all()
+        rooms = Room.objects.all()
         rooms = Room.objects.filter(
             Q(topic__name__icontains = que)
         )
+
+        # rooms = Room.objects.all()
+        # rooms = Room.objects.select_related('topic').all()
+        # room_array = []
+        # for room in rooms:
+        #     room_array.append({'host':room.host, 'name':room.name, 'topic':room.topic.name})
+        # print(room_array)
+
+        
+        
+
+
+        # rooms = Room.objects.select_related('topic')
+
+        # rooms = Room.objects.select_related('topic').filter(
+        #     Q(topic__name__icontains = que)
+        # )
         room_count = rooms.count()
         q = int(q)
-            # activity
+        
+        # activity
+        
         room_messages = Message.objects.order_by("-created")[:q]
         topics = Topic.objects.all()
         
@@ -105,12 +126,21 @@ class SearchMessages(View):
 class RoomView(GroupRequiredMixin, View):
     group_required = [u'viewer_group']
     # permission_required = ('base.view_room', 'base.view_message')
+    @method_decorator(query_debugger, name='dispatch')
     def get(self, request, pk):
         
         room = Room.objects.get(id = pk)
         room_messages = room.message_set.all()
         participants = room.participants.all()
         context = {'room' :room, 'room_messages': room_messages, 'participants':participants} 
+
+        queryset = Room.objects.prefetch_related('participants')
+        rooms = []
+        for room in queryset:
+            particpants = room.participants.all()
+            rooms.append({'name':room.name, 'participants':particpants})
+        # print(rooms)
+
         return render(request, "base/room.html", context)
     
     def post(self, request, pk):
@@ -196,6 +226,42 @@ class CreateTopic(GroupRequiredMixin, View):
             return redirect('home')
         else :
             return render(request, 'base/room_form.html', {'form':form})
+        
+class CreateUser(GroupRequiredMixin, View):
+    group_required = [u'admin_group']
+
+    def get(self, request):
+        form = UserCreationForm()
+        return render(request, 'base/room_form.html', {'form':form})
+        # return redirect('home')
+    
+    def post(self, request):
+        form = UserCreationForm(request.POST)
+        if form.is_valid():
+            form.save()
+            username = form.cleaned_data.get('username')
+            raw_password = form.cleaned_data.get('password1')
+            user = authenticate(username=username, password=raw_password)
+            login(request, user)
+            return redirect('home')
+        else:
+            return render(request, 'base/room_form.html', {'form':form})
+        
+class EditUserProfile(GroupRequiredMixin, View):
+    group_required = [u'admin_group']
+
+    def get(self, request):
+        form = UserProfileForm()
+        return render(request, 'base/room_form.html', {'form':form})
+    
+    def post(self, request):
+        form = UserProfileForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('home')
+        else :
+            return render(request, 'base/room_form.html', {'form':form})
+
 
 class UpdateRoom(GroupRequiredMixin, View):
 
