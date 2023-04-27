@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pizza Shop</title>
+</head>
+<body>
+    <h1>These are the Pizzas Availabe:</h1>
+    <br>
+
+    {% for pizza in pizzas %}
+        <h4>Name: {{pizza.name}}</h4>
+        <h5>Toppings are: </h5>
+        {% for topping in pizza.toppings %}
+            <p>{{ topping }}</p>
+        {% endfor %}
+        <hr>
+    {% endfor %}
+</body>
+</html>

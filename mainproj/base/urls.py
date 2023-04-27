@@ -27,6 +27,8 @@ urlpatterns = [
     path('delete-message/<str:pk>/',login_required(views.DeleteMessage.as_view(), login_url='login'), name="delete-message"),
     path('upvote-message/<str:pk>/',login_required(views.UpvoteMessage.as_view(), login_url='login'), name="upvote-message"),
     path('search-messages/', views.SearchMessages.as_view(), name="search-messages"),
+    path('pizza', views.PizzaShop.as_view(), name="pizza"),
+    path('restaurant', views.RestaurantView.as_view(), name="restaurant"),
 ]
 # if settings.DEBUG:
 #     urlpatterns += static(settings.MEDIA_URL,document_root=settings.MEDIA_ROOT)

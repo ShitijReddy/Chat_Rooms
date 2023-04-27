@@ -1,12 +1,13 @@
 from django.shortcuts import render, redirect, HttpResponse
 from django.contrib import messages
-from.models import Room, Topic, Message
+from.models import Room, Topic, Message, Pizza, Topping, Restaurant
 from .forms import RoomForm, TopicForm, UserProfileForm
 from django.db.models import Q
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import UserCreationForm
+from django.db.models import Prefetch
 
 
 from django.utils.decorators import method_decorator
@@ -77,18 +78,19 @@ class Home(View):
     # @query_debugger
     @method_decorator(query_debugger, name='dispatch')
     def get(self, request):
+        # return HttpResponse("Welcome to Home Page")
         print(request.user)
         q = request.GET.get('act') if request.GET.get('act') != None else '5'
         que = request.GET.get('top') if request.GET.get('top') != None else ''
         
-        room_messages = Message.objects.all()
-        rooms = Room.objects.all()
+        # room_messages = Message.objects.all()
+        # rooms = Room.objects.all()
         rooms = Room.objects.filter(
             Q(topic__name__icontains = que)
         )
 
         # rooms = Room.objects.all()
-        # rooms = Room.objects.select_related('topic').all()
+        # rooms = Room.objects.select_related('topic','host').all()
         # room_array = []
         # for room in rooms:
         #     room_array.append({'host':room.host, 'name':room.name, 'topic':room.topic.name})
@@ -106,9 +108,9 @@ class Home(View):
         room_count = rooms.count()
         q = int(q)
         
-        # activity
-        
-        room_messages = Message.objects.order_by("-created")[:q]
+        # # activity
+        #               ONLY 
+        room_messages = Message.objects.only('created', 'body').order_by("-created")[:q]
         topics = Topic.objects.all()
         
         context = {'room_messages':room_messages,'rooms':rooms, 'topics':topics, 'room_count':room_count}
@@ -128,17 +130,18 @@ class RoomView(GroupRequiredMixin, View):
     # permission_required = ('base.view_room', 'base.view_message')
     @method_decorator(query_debugger, name='dispatch')
     def get(self, request, pk):
-        
-        room = Room.objects.get(id = pk)
+        #       DEFER Method
+        room = Room.objects.defer('updated', 'created').get(id = pk)
         room_messages = room.message_set.all()
         participants = room.participants.all()
         context = {'room' :room, 'room_messages': room_messages, 'participants':participants} 
 
-        queryset = Room.objects.prefetch_related('participants')
-        rooms = []
-        for room in queryset:
-            particpants = room.participants.all()
-            rooms.append({'name':room.name, 'participants':particpants})
+        # queryset = Room.objects.all()
+        # queryset = Room.objects.prefetch_related('participants')
+        # rooms = []
+        # for room in queryset:
+        #     particpants = room.participants.all()
+        #     rooms.append({'name':room.name, 'participants':particpants})
         # print(rooms)
 
         return render(request, "base/room.html", context)
@@ -155,6 +158,49 @@ class RoomView(GroupRequiredMixin, View):
         room.participants.add(request.user)
         return redirect('room', pk=room.id)
 
+class PizzaShop(View):
+    def get(self, request):
+        # queryset = Restaurant.objects.all()
+        query = Pizza.objects.prefetch_related(Prefetch('toppings', queryset=Topping.objects.order_by('-name')))
+        pizzas = []
+        for pizza in query:
+            toppings = pizza.toppings.all()
+            pizzas.append({'name':pizza.name, 'toppings':toppings})
+        # print(pizzas)
+        context = {'pizzas':pizzas}
+        return render(request,"base/pizza_shop.html", context)
+
+    def post(self, request):
+        pass
+
+class RestaurantView(View):
+    def get(self, request):
+        queryset = Pizza.objects.only('name', 'origin')
+        restaurants = Restaurant.objects.prefetch_related(Prefetch("best_pizza", queryset))
+        for rest in restaurants:
+            print("rest name:", rest.name)
+            print("Best Pizza:" ,rest.best_pizza)
+            print("Origin:", rest.best_pizza.origin)
+        #     print("Toppings are:")
+            # for topping in rest.best_pizza.toppings.all():
+            #     print("  ",topping)
+            # print("\n")
+
+        # print(queryset__pizzas__toppings)
+        # print(queryset)
+
+        rests = []
+        for rest in restaurants:
+            best_pizza = rest.best_pizza
+        #     toppings = pizzas__toppings.all()
+            rests.append({'name':rest.name, 'best_pizza':best_pizza})
+        # print(rests)
+        context = {'rests':rests}
+        return render(request,"base/restaurant.html", context)
+        # return redirect('home')
+
+    def post(self, request):
+        pass
 
 class RoomSearch(View):
     def get(self, request, pk):
@@ -295,14 +341,14 @@ class DeleteRoom(GroupRequiredMixin, View):
 
     @method_decorator(login_required(login_url='login'))
     def get(self, request, pk):
-        room = Room.objects.get(id=pk)
+        room = Room.objects.only('id').get(id=pk)
         if request.user != room.host:
             return HttpResponse("Sorry, You Can't DELETE as you are NOT THE HOST of this room")
         return render(request,'base/delete.html', {'obj': room})
     
     @method_decorator(login_required(login_url='login'))
     def post(self, request, pk):
-        room = Room.objects.get(id=pk)
+        room = Room.objects.only('id').get(id=pk)
         if request.user != room.host:
             return HttpResponse("Sorry, You Can't DELETE as you are NOT THE HOST of this room")
         room.delete()
