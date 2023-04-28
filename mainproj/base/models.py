@@ -1,5 +1,8 @@
 from django.db import models
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, AbstractUser
+
+# class User(AbstractUser):
+#     points = models.IntegerField(default=0)
 
 class Topic(models.Model):
     name = models.CharField(max_length=200)
@@ -42,6 +45,17 @@ class Message(models.Model):
     def __str__(self):
         return self.body[0:55]
 
+class UserContribution(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    points = models.IntegerField(default=0)
+    roomsCreated = models.IntegerField(default=0)
+    
+    
+    def __str__(self):
+        return self.user.username
+
+
+
 class Topping(models.Model):
     name = models.CharField(max_length=30)
 
@@ -65,3 +79,5 @@ class Restaurant(models.Model):
     )
     def __str__(self):
         return self.name
+
+

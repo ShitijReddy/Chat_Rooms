@@ -1,20 +1,38 @@
-<a href="/">
-    <h2>Go to Home</h2>
-    
-</a>
-<form action="{% url 'search-messages' %}" method="GET">
-    <label>Search Messages from all rooms here: </label>
-    <input type="text" name="que" placeholder="Search Messages.." />
-</form>
-<a href="{% url 'create-user' %}"> <h3>Create New User</h3></a>
-<br>
-<a href="{% url 'pizza' %}"> <h3>Go to Pizza Shop</h3></a>
-<a href="{% url 'restaurant' %}"> <h3>See Restaurants </h3></a>
-<!-- <a href="{% url 'edit-user' %}"> <h3>Create New User</h3></a> -->
-{% if request.user.is_authenticated %}
-<p>Hello {{request.user}}</p>
-<a href="{%  url 'logout' %}">Logout</a>
-{%  else %}
-<a href="{% url 'login' %}">Login</a>
-{% endif %}
-<hr>
+<style>
+    .container {
+        display: grid;
+        grid-template-columns: 3fr 1fr;
+    }
+</style>
+
+<div class = "container">
+    <div>
+        <a href="/">
+            <h2>Go to Home</h2>
+            
+        </a>
+        <form action="{% url 'search-messages' %}" method="GET">
+            <label>Search Messages from all rooms here: </label>
+            <input type="text" name="que" placeholder="Search Messages.." />
+        </form>
+        <a href="{% url 'create-user' %}"> <h3>Create New User</h3></a>
+        <br>
+        <a href="{% url 'pizza' %}"> <h3>Go to Pizza Shop</h3></a>
+        <a href="{% url 'restaurant' %}"> <h3>See Restaurants </h3></a>
+        <!-- <a href="{% url 'edit-user' %}"> <h3>Create New User</h3></a> -->
+        {% if request.user.is_authenticated %}
+        <p>Hello {{request.user}}</p>
+        <a href="{%  url 'logout' %}">Logout</a>
+        {%  else %}
+        <a href="{% url 'login' %}">Login</a>
+        {% endif %}
+        <hr>
+    </div>
+    <div>
+        <h3>Top Contributors</h3>
+        {% for user in users %}
+            {{user}} - {{user.points}}
+            <br>
+        {% endfor %}
+    </div>
+</div>

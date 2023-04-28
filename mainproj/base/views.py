@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, HttpResponse
 from django.contrib import messages
-from.models import Room, Topic, Message, Pizza, Topping, Restaurant
+from.models import Room, Topic, Message, Pizza, Topping, Restaurant, UserContribution
 from .forms import RoomForm, TopicForm, UserProfileForm
 from django.db.models import Q
 from django.contrib.auth.models import User
@@ -78,6 +78,8 @@ class Home(View):
     # @query_debugger
     @method_decorator(query_debugger, name='dispatch')
     def get(self, request):
+        users = User.objects.all()
+        
         # return HttpResponse("Welcome to Home Page")
         print(request.user)
         q = request.GET.get('act') if request.GET.get('act') != None else '5'
@@ -112,8 +114,25 @@ class Home(View):
         #               ONLY 
         room_messages = Message.objects.only('created', 'body').order_by("-created")[:q]
         topics = Topic.objects.all()
+        users = UserContribution.objects.all()
+        # all_messages = Message.objects.all()
+        # for msg in all_messages:
+        #     for user in users:
+        #         if(msg.user == user.user):
+        #             user.points += msg.votes
+        #             user.save()
+        # for u in users:
+        #     u.points = 0
+        #     u.save()
         
-        context = {'room_messages':room_messages,'rooms':rooms, 'topics':topics, 'room_count':room_count}
+        #     msgs = Message.objects.filter(user = u.user)
+        #     for msg in msgs:
+        #         u.points += msg.votes
+        #         u.save()
+        # users = UserContribution.objects.order_by("points")
+        # users = UserContribution.objects.all()
+        context = {'room_messages':room_messages,'rooms':rooms, 'topics':topics, 'room_count':room_count,
+                   'users':users}
         return render(request, "base/home.html", context)   
 
 
@@ -160,8 +179,9 @@ class RoomView(GroupRequiredMixin, View):
 
 class PizzaShop(View):
     def get(self, request):
-        # queryset = Restaurant.objects.all()
-        query = Pizza.objects.prefetch_related(Prefetch('toppings', queryset=Topping.objects.order_by('-name')))
+        # query = Pizza.objects.all()
+        # query = Pizza.objects.prefetch_related('toppings')
+        query = Pizza.objects.prefetch_related(Prefetch('toppings', queryset=Topping.objects.order_by('name')))
         pizzas = []
         for pizza in query:
             toppings = pizza.toppings.all()
@@ -388,6 +408,10 @@ class DeleteMessage(GroupRequiredMixin, View):
         room = message.room
         if request.user != message.user:
             return HttpResponse("Sorry, You Can't DELETE as you are NOT THE HOST of this message")
+        
+        u = UserContribution.objects.get(user = message.user)
+        u.points -= message.votes
+        u.save()
         message.delete()
         return redirect('room', pk=room.id)
 #     context = {'room' :room, 'room_messages': room_messages, 'participants':participants} 
@@ -406,5 +430,8 @@ class UpvoteMessage(GroupRequiredMixin, View):
 
         message.votes += 1
         message.save()
+        u = UserContribution.objects.get(user = message.user)
+        u.points += 1
+        u.save()
 
         return redirect('room', pk=room.id)
